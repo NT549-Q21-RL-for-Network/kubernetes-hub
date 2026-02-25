@@ -5,3 +5,6 @@ resources:
   - user-db
   - product-db
   - order-db
+  - inventory-db
+  - payment-db
+  - redis

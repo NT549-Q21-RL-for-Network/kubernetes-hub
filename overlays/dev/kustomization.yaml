@@ -13,8 +13,13 @@ resources:
   - ../../base/user-service
   - ../../base/product-service
   - ../../base/order-service
+  - ../../base/inventory-service
+  - ../../base/payment-service
   # Databases (StatefulSet)
   - ../../base/databases
+  # Dev secrets for new services
+  - inventory-db-secret.yaml
+  - payment-db-secret.yaml
   # Extra dev-only resources
   - pdb.yaml
 # =========================
@@ -43,3 +48,7 @@ images:
     newTag: "15ed424"
   - name: tienphatng237/mini-ecommerce-order-service
     newTag: "15ed424"
+  - name: tienphatng237/mini-ecommerce-inventory-service
+    newTag: latest
+  - name: tienphatng237/mini-ecommerce-payment-service
+    newTag: latest
