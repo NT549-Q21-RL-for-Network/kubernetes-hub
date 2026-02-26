@@ -35,6 +35,10 @@ spec:
                   key: POSTGRES_PASSWORD
             - name: PRODUCT_SERVICE_BASE_URL
               value: http://product-service:8080
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"
             - name: HTTP_CONNECT_TIMEOUT_MS
               value: "2000"
             - name: HTTP_READ_TIMEOUT_MS
