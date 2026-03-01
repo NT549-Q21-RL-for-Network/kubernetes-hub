@@ -20,6 +20,7 @@ spec:
             - containerPort: 8080
           env:
             - name: SECURITY_JWT_SECRET
+              value: ""
               valueFrom:
                 secretKeyRef:
                   name: auth-jwt-secret
