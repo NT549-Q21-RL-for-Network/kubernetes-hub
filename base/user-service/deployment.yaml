@@ -40,3 +40,8 @@ spec:
                 secretKeyRef:
                   name: user-db-secret
                   key: POSTGRES_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-jwt-secret
+                  key: JWT_SECRET

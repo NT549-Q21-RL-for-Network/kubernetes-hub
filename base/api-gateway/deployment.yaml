@@ -18,3 +18,9 @@ spec:
           image: tienphatng237/mini-ecommerce-api-gateway
           ports:
             - containerPort: 8080
+          env:
+            - name: SECURITY_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-jwt-secret
+                  key: JWT_SECRET
