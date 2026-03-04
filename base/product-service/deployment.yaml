@@ -33,3 +33,8 @@ spec:
                 secretKeyRef:
                   name: product-db-secret
                   key: POSTGRES_PASSWORD
+            - name: INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: auth-jwt-secret
+                  key: INTERNAL_SERVICE_TOKEN
