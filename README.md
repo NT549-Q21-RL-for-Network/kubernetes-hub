@@ -226,7 +226,40 @@ LB_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{
 curl --resolve mini-ecommerce.tienphatng237.com:80:$LB_IP http://mini-ecommerce.tienphatng237.com/api/users/health
 ```
 
-## 5. Sync Conflict Note (When Jenkins Updates Image Tags)
+## 5. Chaos Mesh on k0s Dev Cluster
+
+### 5.1 Install Chaos Mesh
+
+Run from the repo root:
+
+```bash
+./scripts/install-chaos-mesh.sh
+```
+
+This installs Chaos Mesh via Helm in namespace `chaos-mesh` and applies ingress:
+- Host: `chaos-mesh.tienphatng237`
+- Service: `chaos-dashboard:2333`
+
+### 5.2 Verify Installation
+
+```bash
+kubectl -n chaos-mesh get pods
+kubectl -n chaos-mesh get svc chaos-dashboard
+kubectl -n chaos-mesh get ingress chaos-dashboard
+```
+
+### 5.3 Access Dashboard via Internal Domain
+
+```bash
+LB_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+sudo sed -i '/chaos-mesh\.tienphatng237/d' /etc/hosts
+echo "$LB_IP chaos-mesh.tienphatng237" | sudo tee -a /etc/hosts
+```
+
+Open:
+- `http://chaos-mesh.tienphatng237`
+
+## 6. Sync Conflict Note (When Jenkins Updates Image Tags)
 
 If Jenkins pushes a new `gitops(dev): update image tags ...` commit before your push:
 
