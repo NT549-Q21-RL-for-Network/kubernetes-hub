@@ -44,7 +44,7 @@ images:
   - name: tienphatng237/mini-ecommerce-user-service
     newTag: b13c05e
   - name: tienphatng237/mini-ecommerce-product-service
-    newTag: "03be65f"
+    newTag: "b13c05e"
   - name: tienphatng237/mini-ecommerce-order-service
     newTag: "38eaf1a"
   - name: tienphatng237/mini-ecommerce-inventory-service
