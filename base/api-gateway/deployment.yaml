@@ -15,6 +15,7 @@ spec:
       containers:
         - name: api-gateway
           image: tienphatng237/mini-ecommerce-api-gateway
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -24,3 +25,8 @@ spec:
                 secretKeyRef:
                   name: auth-jwt-secret
                   key: JWT_SECRET
+            - name: INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: auth-jwt-secret
+                  key: INTERNAL_SERVICE_TOKEN

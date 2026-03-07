@@ -34,6 +34,11 @@ spec:
                   key: POSTGRES_PASSWORD
             - name: PRODUCT_SERVICE_BASE_URL
               value: http://product-service:8080
+            - name: INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: auth-jwt-secret
+                  key: INTERNAL_SERVICE_TOKEN
             - name: REDIS_HOST
               value: redis
             - name: REDIS_PORT

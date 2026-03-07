@@ -35,3 +35,8 @@ spec:
               value: redis
             - name: REDIS_PORT
               value: "6379"
+            - name: INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: auth-jwt-secret
+                  key: INTERNAL_SERVICE_TOKEN
