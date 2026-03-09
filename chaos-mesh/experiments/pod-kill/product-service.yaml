@@ -1,0 +1,14 @@
+apiVersion: chaos-mesh.org/v1alpha1 # Chaos Mesh CRD API version.
+kind: PodChaos # Chaos type that injects failures into Pods.
+metadata:
+  name: pod-kill-product-service # Unique name of this PodChaos resource.
+  namespace: mini-ecommerce # Namespace where Chaos resource is created.
+spec:
+  action: pod-kill # Failure action: kill selected pod(s).
+  mode: one # Select exactly one matching pod.
+  selector:
+    namespaces:
+      - mini-ecommerce # Namespace scope for selecting target pods.
+    labelSelectors:
+      app: product-service # Target pods with app=product-service label.
+  duration: "30s" # Keep chaos active for 30 seconds.

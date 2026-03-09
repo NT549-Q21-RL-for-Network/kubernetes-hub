@@ -1,0 +1,20 @@
+apiVersion: chaos-mesh.org/v1alpha1 # Chaos Mesh CRD API version.
+kind: Schedule # Schedule wrapper to run chaos repeatedly on a cron interval.
+metadata:
+  name: product-service-crash-loop # Unique chaos resource name.
+  namespace: mini-ecommerce # Namespace where the chaos resource is created.
+spec:
+  schedule: "@every 10s" # Trigger one chaos injection every 10 seconds.
+  type: PodChaos # The scheduled chaos type is PodChaos.
+  concurrencyPolicy: Forbid # Prevent overlapping runs if a previous run is still active.
+  historyLimit: 1 # Keep only one execution record to reduce clutter.
+  podChaos:
+    action: container-kill # Kill one container to force restart behavior.
+    containerNames:
+      - product-service # Container name inside target pod.
+    mode: one # Select one matching pod on each scheduled run.
+    selector:
+      namespaces:
+        - mini-ecommerce # Limit pod selection to mini-ecommerce namespace.
+      labelSelectors:
+        app: product-service # Target pods labeled as product-service.

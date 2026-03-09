@@ -1,0 +1,26 @@
+apiVersion: chaos-mesh.org/v1alpha1 # Chaos Mesh CRD API version.
+kind: NetworkChaos # Chaos type that injects network faults.
+metadata:
+  name: api-gateway-to-product-delay # Unique name of this NetworkChaos resource.
+  namespace: mini-ecommerce # Namespace where Chaos resource is created.
+spec:
+  action: delay # Inject artificial network latency.
+  mode: all # Apply to all source pods matched by selector.
+  selector:
+    namespaces:
+      - mini-ecommerce # Namespace scope for selecting source pods.
+    labelSelectors:
+      app: api-gateway # Source pods: api-gateway.
+  delay:
+    latency: "100ms" # Base latency added to packets.
+    jitter: "0ms" # Extra random delay range.
+    correlation: "0" # Correlation between consecutive delayed packets.
+  direction: to # Apply delay to outgoing traffic from source to target.
+  target:
+    mode: all # Affect all target pods matched by target selector.
+    selector:
+      namespaces:
+        - mini-ecommerce # Namespace scope for selecting target pods.
+      labelSelectors:
+        app: product-service # Target pods: product-service.
+  duration: "60s" # Keep chaos active for 60 seconds.

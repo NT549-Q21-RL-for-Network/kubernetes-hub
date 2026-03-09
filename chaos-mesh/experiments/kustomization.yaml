@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1 # Kustomize API version.
+kind: Kustomization # Declares this file as a Kustomize manifest.
+
+# Register every chaos scenario so one command can apply all experiments.
+resources:
+  - pod-kill/product-service.yaml # Pod kill test for product-service.
+  - pod-kill/order-service.yaml # Pod kill test for order-service.
+  - network-delay/api-gateway-delay.yaml # Network delay from api-gateway to product-service.
+  - cpu-stress/product-service-cpu.yaml # CPU stress test on product-service pods.
+  - pod-crash-loop/product-service-crash.yaml # Container crash-loop simulation on product-service.
