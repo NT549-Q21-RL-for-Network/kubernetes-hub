@@ -33,6 +33,9 @@ patches:
   # topologySpreadConstraints
   - path: tsc.yaml
   - path: ingress-hosts.yaml
+  
+patchesStrategicMerge:
+  - anti-affinity.yaml
 # =========================
 # IMAGES (DEV TAG)
 # =========================
