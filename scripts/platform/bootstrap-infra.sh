@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 NAMESPACE="${NAMESPACE:-mini-ecommerce}"
 ARGOCD_NAMESPACE="${ARGOCD_NAMESPACE:-argocd}"
 ARGOCD_APP_MANIFEST="${ARGOCD_APP_MANIFEST:-$ROOT_DIR/argocd/applications/mini-ecommerce-dev.yaml}"
@@ -120,7 +120,7 @@ install_sealed_secrets_if_missing() {
 
   install_helm
   echo "[INFO] Installing Sealed Secrets controller..."
-  "$ROOT_DIR/scripts/install-sealed-secrets.sh"
+  "$ROOT_DIR/scripts/platform/install-sealed-secrets.sh"
 }
 
 install_argocd_if_missing() {

@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 NAMESPACE="${NAMESPACE:-chaos-mesh}"
 RELEASE="${RELEASE:-chaos-mesh}"
-VALUES_FILE="${VALUES_FILE:-chaos-mesh/values-k0s.yaml}"
-INGRESS_FILE="${INGRESS_FILE:-chaos-mesh/ingress.yaml}"
+VALUES_FILE="${VALUES_FILE:-$ROOT_DIR/chaos-mesh/values-k0s.yaml}"
+INGRESS_FILE="${INGRESS_FILE:-$ROOT_DIR/chaos-mesh/ingress.yaml}"
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then

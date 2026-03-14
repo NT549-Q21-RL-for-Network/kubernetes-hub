@@ -17,9 +17,6 @@ resources:
   - ../../base/payment-service
   # Databases (StatefulSet)
   - ../../base/databases
-  # Dev secrets for new services
-  - inventory-db-secret.yaml
-  - payment-db-secret.yaml
   # Extra dev-only resources
   - pdb.yaml
 # =========================

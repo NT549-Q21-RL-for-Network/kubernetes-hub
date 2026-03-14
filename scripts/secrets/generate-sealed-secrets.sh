@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 NAMESPACE="${NAMESPACE:-mini-ecommerce}"
 CONTROLLER_NAMESPACE="${CONTROLLER_NAMESPACE:-kube-system}"
 CONTROLLER_NAME="${CONTROLLER_NAME:-sealed-secrets-controller}"
@@ -68,5 +68,7 @@ generate_one() {
 generate_one user-db
 generate_one product-db
 generate_one order-db
+generate_one inventory-db
+generate_one payment-db
 
 echo "Done. Commit sealedsecret.yaml files and keep secret.yaml ignored."
