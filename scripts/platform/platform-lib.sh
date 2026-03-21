@@ -21,10 +21,19 @@ require_cmd() {
   }
 }
 
+kubectl_context_ready() {
+  kubectl config current-context >/dev/null 2>&1
+}
+
 ensure_kubectl() {
   if command -v kubectl >/dev/null 2>&1; then
-    KUBECTL=(kubectl)
-    return
+    if kubectl_context_ready; then
+      KUBECTL=(kubectl)
+      return
+    fi
+
+    echo "[ERROR] kubectl is installed but no current context is configured. Set KUBECONFIG or run 'kubectl config use-context <name>' before continuing."
+    exit 1
   fi
 
   if command -v k0s >/dev/null 2>&1; then

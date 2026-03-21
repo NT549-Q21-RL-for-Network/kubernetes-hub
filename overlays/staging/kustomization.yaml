@@ -13,8 +13,8 @@ resources:
   - ../../base/user-service
   - ../../base/product-service
   - ../../base/order-service
-  # - ../../base/inventory-service
-  # - ../../base/payment-service
+  - ../../base/inventory-service
+  - ../../base/payment-service
   # Databases (StatefulSet)
   - ../../base/databases
   # Extra staging resources
@@ -47,7 +47,7 @@ images:
     newTag: "70850d0"
   - name: tienphatng237/mini-ecommerce-order-service
     newTag: "70850d0"
-  # - name: tienphatng237/mini-ecommerce-inventory-service
-  #   newTag: "70850d0"
-  # - name: tienphatng237/mini-ecommerce-payment-service
-  #   newTag: "70850d0"
+  - name: tienphatng237/mini-ecommerce-inventory-service
+    newTag: "70850d0"
+  - name: tienphatng237/mini-ecommerce-payment-service
+    newTag: "70850d0"
