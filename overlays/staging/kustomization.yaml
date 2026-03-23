@@ -1,13 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: mini-ecommerce
-# =========================
-# BASE RESOURCES
-# =========================
+
 resources:
-  # Namespace
   - ../../namespaces
-  # Core services
+  - secrets
   - ../../base/api-gateway
   - ../../base/frontend
   - ../../base/user-service
@@ -15,27 +12,18 @@ resources:
   - ../../base/order-service
   - ../../base/inventory-service
   - ../../base/payment-service
-  # Databases (StatefulSet)
   - ../../base/databases
-  # Extra staging resources
   - pdb.yaml
-# =========================
-# PATCHES (STAGING ONLY)
-# =========================
+
 patches:
-  # Scale for staging
   - path: replicas.yaml
-  # CPU / Memory requests for staging
   - path: resources.yaml
-  # topologySpreadConstraints
   - path: tsc.yaml
   - path: ingress-hosts.yaml
 
 patchesStrategicMerge:
   - anti-affinity.yaml
-# =========================
-# IMAGES (STAGING TAG)
-# =========================
+
 images:
   - name: tienphatng237/mini-ecommerce-api-gateway
     newTag: "70850d0"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-NAMESPACE="${NAMESPACE:-kube-system}"
+CONTROLLER_NAMESPACE="${CONTROLLER_NAMESPACE:-kube-system}"
 RELEASE_NAME="${RELEASE_NAME:-sealed-secrets}"
 CHART_NAME="${CHART_NAME:-sealed-secrets/sealed-secrets}"
 CONTROLLER_NAME="${CONTROLLER_NAME:-sealed-secrets-controller}"
@@ -23,11 +23,11 @@ helm repo update >/dev/null
 
 echo "[2/3] Install/upgrade Sealed Secrets controller"
 helm upgrade --install "$RELEASE_NAME" "$CHART_NAME" \
-  -n "$NAMESPACE" \
+  -n "$CONTROLLER_NAMESPACE" \
   --create-namespace \
   --set-string fullnameOverride="$CONTROLLER_NAME"
 
 echo "[3/3] Wait rollout"
-kubectl -n "$NAMESPACE" rollout status deploy/"$CONTROLLER_NAME" --timeout="$TIMEOUT"
+kubectl -n "$CONTROLLER_NAMESPACE" rollout status deploy/"$CONTROLLER_NAME" --timeout="$TIMEOUT"
 
-echo "Done. Controller is ready: $NAMESPACE/$CONTROLLER_NAME"
+echo "Done. Controller is ready: $CONTROLLER_NAMESPACE/$CONTROLLER_NAME"

@@ -3,6 +3,8 @@
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 NAMESPACE="${NAMESPACE:-mini-ecommerce}"
 ARGOCD_NAMESPACE="${ARGOCD_NAMESPACE:-argocd}"
+CONTROLLER_NAMESPACE="${CONTROLLER_NAMESPACE:-kube-system}"
+CONTROLLER_NAME="${CONTROLLER_NAME:-sealed-secrets-controller}"
 ARGOCD_APP_MANIFEST="${ARGOCD_APP_MANIFEST:-$ROOT_DIR/argocd/applications/mini-ecommerce-dev.yaml}"
 ARGOCD_INSTALL_MANIFEST="${ARGOCD_INSTALL_MANIFEST:-$ROOT_DIR/argocd/install.yaml}"
 ARGOCD_INSTALL_URL="${ARGOCD_INSTALL_URL:-https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml}"
@@ -127,7 +129,8 @@ install_storage_class_if_missing() {
 }
 
 install_sealed_secrets_if_missing() {
-  if "${KUBECTL[@]}" get crd sealedsecrets.bitnami.com >/dev/null 2>&1; then
+  if "${KUBECTL[@]}" get crd sealedsecrets.bitnami.com >/dev/null 2>&1 \
+    && "${KUBECTL[@]}" -n "$CONTROLLER_NAMESPACE" get deploy "$CONTROLLER_NAME" >/dev/null 2>&1; then
     return
   fi
 

@@ -1,6 +1,7 @@
 # ===== Secrets =====
 **/secret.yaml
-overlays/dev/sealed-secrets-key.yaml
+base/api-gateway/auth-jwt-secret.yaml
+overlays/*/sealed-secrets-key.yaml
 
 # ===== Argo CD install (official manifest - too large) =====
 **/install.yaml

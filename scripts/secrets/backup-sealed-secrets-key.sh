@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-KEY_BACKUP_PATH="${KEY_BACKUP_PATH:-$ROOT_DIR/overlays/dev/sealed-secrets-key.yaml}"
+ENV_NAME="${ENV_NAME:-dev}"
+KEY_BACKUP_PATH="${KEY_BACKUP_PATH:-$ROOT_DIR/overlays/$ENV_NAME/sealed-secrets-key.yaml}"
 CONTROLLER_NAMESPACE="${CONTROLLER_NAMESPACE:-kube-system}"
 ACTIVE_KEY_LABEL="${ACTIVE_KEY_LABEL:-sealedsecrets.bitnami.com/sealed-secrets-key=active}"
 KUBECTL=()

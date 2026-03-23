@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-KEY_BACKUP_PATH="${KEY_BACKUP_PATH:-$ROOT_DIR/overlays/dev/sealed-secrets-key.yaml}"
+ENV_NAME="${ENV_NAME:-dev}"
+KEY_BACKUP_PATH="${KEY_BACKUP_PATH:-$ROOT_DIR/overlays/$ENV_NAME/sealed-secrets-key.yaml}"
 CONTROLLER_NAMESPACE="${CONTROLLER_NAMESPACE:-kube-system}"
 CONTROLLER_NAME="${CONTROLLER_NAME:-sealed-secrets-controller}"
 TIMEOUT="${TIMEOUT:-180s}"
@@ -38,7 +39,10 @@ if [[ ! -f "$KEY_BACKUP_PATH" ]]; then
 fi
 
 "${KUBECTL[@]}" get namespace "$CONTROLLER_NAMESPACE" >/dev/null 2>&1 || "${KUBECTL[@]}" create namespace "$CONTROLLER_NAMESPACE"
-"${KUBECTL[@]}" apply -f "$KEY_BACKUP_PATH"
+tmp_manifest="$(mktemp)"
+trap 'rm -f "$tmp_manifest"' EXIT
+sed "s/^  namespace: .*/  namespace: $CONTROLLER_NAMESPACE/" "$KEY_BACKUP_PATH" > "$tmp_manifest"
+"${KUBECTL[@]}" apply -f "$tmp_manifest"
 
 if "${KUBECTL[@]}" -n "$CONTROLLER_NAMESPACE" get deploy "$CONTROLLER_NAME" >/dev/null 2>&1; then
   "${KUBECTL[@]}" -n "$CONTROLLER_NAMESPACE" rollout restart deploy/"$CONTROLLER_NAME"
