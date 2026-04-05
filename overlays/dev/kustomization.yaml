@@ -39,7 +39,7 @@ patchesStrategicMerge:
 # =========================
 images:
   - name: tienphatng237/mini-ecommerce-api-gateway
-    newTag: "0dbca3d"
+    newTag: "ce82c9c"
   - name: tienphatng237/mini-ecommerce-frontend
     newTag: "ce82c9c"
   - name: tienphatng237/mini-ecommerce-user-service
