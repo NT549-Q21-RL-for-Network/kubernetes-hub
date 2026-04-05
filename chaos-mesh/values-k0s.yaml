@@ -1,7 +1,0 @@
-chaosDaemon:
-  runtime: containerd
-  socketPath: /run/k0s/containerd.sock
-
-dashboard:
-  create: true
-  securityMode: false

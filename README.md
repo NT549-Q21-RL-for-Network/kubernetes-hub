@@ -1,18 +1,20 @@
 # Kubernetes Hub
 
-This repository contains Kubernetes manifests, GitOps configuration and Chaos Mesh for the [Mini E-commerce system](https://github.com/NT114-Q21-Specialized-Project/mini-ecommerce-microservices).
+This repository contains Kubernetes manifests and GitOps configuration for the [Mini E-commerce system](https://github.com/NT114-Q21-Specialized-Project/mini-ecommerce-microservices).
 
 ## Table of Contents
 
-- [Argo CD](#2-gitops-bootstrap-argo-cd)
-- [Chaos Mesh](#5-chaos-mesh-on-k0s-dev-cluster)
-- [Sync Conflict Note](#6-sync-conflict-note-when-jenkins-updates-image-tags)
+- [Repository Overview](#1-repository-overview)
+- [GitOps Bootstrap](#2-gitops-bootstrap-argo-cd)
+- [Deploy Application](#3-deploy-mini-e-commerce-to-the-cluster)
+- [Ingress Access](#4-ingress-access-argo-cd--mini-e-commerce)
+- [Sync Conflict Note](#5-sync-conflict-note-when-jenkins-updates-image-tags)
 
-## 1. ArgoCD Manifests Overview
+## 1. Repository Overview
 
-Contains manifests for setting up ArgoCD in the Kubernetes cluster.
+This section summarizes the target deployment topology and the main environments used by this repository.
 
-### Dev Environment
+### Validated Environments
 
 All manifests in this repository are validated on local Minikube and k0s dev clusters.
 
@@ -47,7 +49,7 @@ This script does NOT deploy the app directly. It only installs infra and creates
 
 ```bash
 # From the repo root
-./scripts/bootstrap-infra.sh
+./scripts/platform/bootstrap-infra.sh
 ```
 
 What it does:
@@ -58,31 +60,33 @@ What it does:
 - apply Argo CD Application manifest
 - print Argo CD status
 
-### 2.3 Reset GitOps on k0s Master (Clean Re-clone)
+### 2.3 Reset GitOps Workspace on k0s Master
 
-If you want a clean reset on k0s master, use the reset script.
-It removes `/home/ubuntu/kubernetes-hub`, clones fresh, and re-runs bootstrap.
+If you want a clean reset on the k0s master, use the reset script.
+It removes the remote repository directory, clones fresh, and re-runs bootstrap.
 
 ```bash
-# This script expects the SSH key at ../jenkins-kvm-hub/key_pair/lab-key
-cd /home/tienphatng237/Desktop/NT114-AIOPs-DevOps/kubernetes-hub
-./scripts/reset-gitops.sh
+# From the repo root
+# Adjust KEY inside the script if your SSH private key is stored elsewhere
+./scripts/platform/reset-gitops.sh
 ```
 
-Adjust `HOST` or `KEY` inside `scripts/reset-gitops.sh` if your environment differs.
+Adjust `HOST`, `USER`, `KEY`, or `REMOTE_DIR` inside `scripts/platform/reset-gitops.sh` if your environment differs.
 
-Manual SSH run (k0s) without the reset script:
+Manual SSH flow on the k0s master without the reset script:
 
 ```bash
-scp -i key_pair/lab-key ../kubernetes-hub/scripts/bootstrap-infra.sh \
-  ubuntu@192.168.201.10:/home/ubuntu/kubernetes-hub/scripts/bootstrap-infra.sh
+KEY=<PATH_TO_SSH_PRIVATE_KEY>
+HOST=ubuntu@<K0S_MASTER_IP>
+REMOTE_DIR=<REMOTE_REPO_DIR>
 
-ssh -i key_pair/lab-key ubuntu@192.168.201.10 \
-  'chmod +x ~/kubernetes-hub/scripts/bootstrap-infra.sh && cd ~/kubernetes-hub && ./scripts/bootstrap-infra.sh'
+scp -i "$KEY" scripts/platform/bootstrap-infra.sh "$HOST:$REMOTE_DIR/scripts/platform/bootstrap-infra.sh"
 
-sudo k0s kubectl -n argocd get applications
-sudo k0s kubectl -n argocd get pods
-sudo k0s kubectl -n mini-ecommerce get pods
+ssh -i "$KEY" "$HOST" "chmod +x $REMOTE_DIR/scripts/platform/bootstrap-infra.sh && cd $REMOTE_DIR && ./scripts/platform/bootstrap-infra.sh"
+
+ssh -i "$KEY" "$HOST" 'sudo k0s kubectl -n argocd get applications'
+ssh -i "$KEY" "$HOST" 'sudo k0s kubectl -n argocd get pods'
+ssh -i "$KEY" "$HOST" 'sudo k0s kubectl -n mini-ecommerce get pods'
 ```
 
 ### 2.4 Manual Argo CD Install (Optional)
@@ -128,12 +132,19 @@ sudo k0s kubectl -n argocd port-forward svc/argocd-server 8088:443
 If you want to access from your local machine, open an SSH tunnel:
 
 ```bash
-ssh -i key_pair/lab-key -L 8088:127.0.0.1:8088 ubuntu@192.168.201.10
+KEY=<PATH_TO_SSH_PRIVATE_KEY>
+HOST=ubuntu@<K0S_MASTER_IP>
+
+ssh -i "$KEY" -L 8088:127.0.0.1:8088 "$HOST"
 ```
 
 Then open `https://localhost:8088` in your browser.
 
-### 2.6 Deploy Mini E-commerce Application with Argo CD
+## 3. Deploy Mini E-commerce to the Cluster
+
+### 3.1 Deploy with Argo CD
+
+If you already ran `./scripts/platform/bootstrap-infra.sh`, the Argo CD Application may already exist. Use this step when you want to create or update it manually.
 
 ```bash
 # 1) Create/update Argo CD Application
@@ -145,7 +156,7 @@ argocd app sync mini-ecommerce-dev
 argocd app wait mini-ecommerce-dev --health --sync --timeout 300
 ```
 
-### 2.7 Verify Deployment
+### 3.2 Verify Deployment
 
 ```bash
 # Argo CD application status
@@ -160,19 +171,19 @@ LB_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{
 curl --resolve mini-ecommerce.tienphatng237.com:80:$LB_IP http://mini-ecommerce.tienphatng237.com/api/users/health
 ```
 
-## 3. Sealed Secrets (Cluster-Specific)
+### 3.3 Sealed Secrets (Cluster-Specific)
 
-Sealed Secrets are cluster-specific. When you change clusters (e.g., k0s),
-you must reseal the secrets using that cluster's public key.
+Sealed Secrets are cluster-specific. If you switch clusters or rebuild the controller,
+you must reseal the secrets using that cluster's active public key.
 
 ```bash
 # 1) Install/upgrade Sealed Secrets controller
-./scripts/install-sealed-secrets.sh
+./scripts/platform/install-sealed-secrets.sh
 
-# 2) Create secret.yaml locally (ignored by git) from example, then edit values
-cp base/databases/user-db/secret.yaml.example base/databases/user-db/secret.yaml
-cp base/databases/product-db/secret.yaml.example base/databases/product-db/secret.yaml
-cp base/databases/order-db/secret.yaml.example base/databases/order-db/secret.yaml
+# 2) Create secret.yaml locally (ignored by Git) from example, then edit values
+for db in user-db product-db order-db inventory-db payment-db; do
+  cp "base/databases/$db/secret.yaml.example" "base/databases/$db/secret.yaml"
+done
 
 # 3) Ensure kubeseal is installed on the target cluster host (example)
 curl -fsSL -o /tmp/kubeseal.tar.gz https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.36.0/kubeseal-0.36.0-linux-amd64.tar.gz
@@ -180,10 +191,27 @@ tar -C /tmp -xzf /tmp/kubeseal.tar.gz
 sudo install -m 755 /tmp/kubeseal /usr/local/bin/kubeseal
 
 # 4) Generate sealedsecret.yaml files using the target cluster key
-./scripts/generate-sealed-secrets.sh
+./scripts/secrets/generate-sealed-secrets.sh
 
 # 5) Commit sealedsecret.yaml and push so Argo CD can reconcile
 ```
+
+#### 3.3.1 Backup Sealed Secrets Controller Key (Local Only)
+
+Backup the controller private key to a local file that is ignored by Git. Do not commit this file:
+
+```bash
+./scripts/secrets/backup-sealed-secrets-key.sh
+```
+
+This writes `overlays/dev/sealed-secrets-key.yaml` and should be stored securely because it can decrypt every SealedSecret generated by this cluster.
+
+To restore the key on a rebuilt cluster after reinstalling the Sealed Secrets controller:
+
+```bash
+./scripts/secrets/restore-sealed-secrets-key.sh
+```
+
 
 ## 4. Ingress Access (Argo CD + Mini E-commerce)
 
@@ -191,11 +219,9 @@ This requires an NGINX Ingress Controller in the cluster.
 
 ### 4.1 Apply Ingress Manifests on k0s
 
-Run from the repo root on k0s master:
+Run from the repo root on the k0s master:
 
 ```bash
-cd ~/kubernetes-hub
-
 # Apply Argo CD ingress
 sudo k0s kubectl apply -f argocd/ingress.yaml
 
@@ -206,8 +232,10 @@ sudo k0s kubectl apply -k overlays/dev
 ### 4.2 Add Hosts on Your Local Machine
 
 ```bash
-LB_IP=$(ssh -i key_pair/lab-key ubuntu@192.168.201.10 \
-  "sudo k0s kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}'")
+KEY=<PATH_TO_SSH_PRIVATE_KEY>
+HOST=ubuntu@<K0S_MASTER_IP>
+
+LB_IP=$(ssh -i "$KEY" "$HOST" "sudo k0s kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}'")
 
 sudo sed -i '/argocd\.tienphatng237\.com/d;/mini-ecommerce\.tienphatng237\.com/d' /etc/hosts
 echo "$LB_IP argocd.tienphatng237.com mini-ecommerce.tienphatng237.com" | sudo tee -a /etc/hosts
@@ -232,50 +260,7 @@ LB_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{
 curl --resolve mini-ecommerce.tienphatng237.com:80:$LB_IP http://mini-ecommerce.tienphatng237.com/api/users/health
 ```
 
-## 5. Chaos Mesh on k0s Dev Cluster
-
-### 5.1 Install Chaos Mesh
-
-Run from the repo root:
-
-```bash
-./scripts/install-chaos-mesh.sh
-```
-
-This installs Chaos Mesh via Helm in namespace `chaos-mesh` and applies ingress:
-- Host: `chaos-mesh.tienphatng237`
-- Service: `chaos-dashboard:2333`
-
-### 5.2 Verify Installation
-
-```bash
-kubectl -n chaos-mesh get pods
-kubectl -n chaos-mesh get svc chaos-dashboard
-kubectl -n chaos-mesh get ingress chaos-dashboard
-```
-
-### 5.3 Access Dashboard via Internal Domain
-
-```bash
-LB_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-sudo sed -i '/chaos-mesh\.tienphatng237/d' /etc/hosts
-echo "$LB_IP chaos-mesh.tienphatng237" | sudo tee -a /etc/hosts
-```
-
-Open:
-- `http://chaos-mesh.tienphatng237`
-
-### 5.4 Chaos Experiment Screenshots
-
-Chaos Mesh dashboard during experiment execution:
-
-![Chaos Mesh Dashboard](images/chaos_mesh_dashboard.png)
-
-Chaos events timeline showing fault injections:
-
-![Chaos Mesh Events](images/chaos_mesh_events.png)
-
-## 6. Sync Conflict Note (When Jenkins Updates Image Tags)
+## 5. Sync Conflict Note (When Jenkins Updates Image Tags)
 
 If Jenkins pushes a new `gitops(dev): update image tags ...` commit before your push:
 
